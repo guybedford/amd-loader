@@ -10,7 +10,7 @@ define(['module', 'require'], function (module, require) {
         // ensure name is always without extension
         if (name.substr(name.length - extension.length - 1) == '.' + extension)
           name = name.substr(0, name.length - extension.length - 1);
-        return name;
+        return normalize(name);
       },
       load: function(name, req, load, config) {
         var path = req.toUrl(name + '.' + extension);
