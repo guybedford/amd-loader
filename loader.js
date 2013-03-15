@@ -31,7 +31,6 @@ define(['module', 'require'], function (module, require) {
       },
       write: function(pluginName, moduleName, write) {
         var compiled = this.buildCache[moduleName];
-        console.log(compiled);
         if (compiled)
           write.asModule(pluginName + '!' + moduleName, compiled);
       },
