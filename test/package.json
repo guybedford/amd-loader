@@ -1,0 +1,8 @@
+{
+  "volo": {
+    "dependencies": {
+      "require": "github:jrburke/requirejs/2.1.5",
+      "coffee-script": "github:jashkenas/coffee-script/1.6.1"
+    }
+  }
+}

@@ -5,6 +5,7 @@ define(['module', 'require'], function (module, require) {
 
   var loader = function(extension, subloader) {
     return {
+      buildCache: {},
       normalize: function(name, normalize) {
         // ensure name is always without extension
         if (name.substr(name.length - extension.length - 1) == '.' + extension)
@@ -13,10 +14,13 @@ define(['module', 'require'], function (module, require) {
       },
       load: function(name, req, load, config) {
         var path = req.toUrl(name + '.' + extension);
+        var self = this;
         
         loader.fetch(path, function(source) {
-          subloader(name, source, req, config, function(compiled) {
+          subloader(name, source, req, function(compiled) {
             if (typeof compiled == 'string') {
+              if (config.isBuild)
+                self.buildCache[name] = compiled;
               load.fromText(module.id + '!' + name, compiled);
               req([module.id + '!' + name], load);
             }
@@ -25,15 +29,18 @@ define(['module', 'require'], function (module, require) {
           }, load.error);
         }, load.error);
       },
-      writeFile: function(pluginName, moduleName, req, write, config) {
-        var load = function(module) {}
-        load.fromText = function(jsSource) {
-          write.asModule(pluginName + '!' + moduleName, req.toUrl(moduleName) + '.js', jsSource);
-        }
-        this.load(moduleName, req, load, config);
+      write: function(pluginName, moduleName, write) {
+        var compiled = this.buildCache[moduleName];
+        console.log(compiled);
+        if (compiled)
+          write.asModule(pluginName + '!' + moduleName, compiled);
+      },
+      writeFile: function(pluginName, moduleName, write) {
+        write.asModule(pluginName + '!' + moduleName, this.buildCache[moduleName]);
       }
     };
   }
+
   loader.load = function(name, req, load, config) {
     load(loader);
   }
@@ -55,7 +62,8 @@ define(['module', 'require'], function (module, require) {
       var xhr, i, prodId;
       if (crossDomain) {
         var xhr = new XMLHttpRequest();
-        if (!('withCredentials' in xhr) && typeof XDomainRequest != 'undefined') {
+        if ('withCredentials' in xhr) {}
+        else if (typeof XDomainRequest != 'undefined') {
           // XDomainRequest for IE.
           xhr = new XDomainRequest();
         }
@@ -92,12 +100,13 @@ define(['module', 'require'], function (module, require) {
     };
 
     loader.fetch = function (url, callback, errback) {
+      var crossDomain = isCrossDomain(url);
       // cross domain and not CORS - assume have a compiled file at moduleName.ext.js
-      if (isCrossDomain && !useCors)
+      if (crossDomain && !useCors)
         return require([url + '.js'], callback, errback);
 
       // get the xhr with CORS enabled if cross domain
-      var xhr = getXhr(isCrossDomain(url));
+      var xhr = getXhr(crossDomain);
       
       xhr.open('GET', url, !requirejs.inlineRequire);
       xhr.onreadystatechange = function(evt) {
@@ -120,7 +129,7 @@ define(['module', 'require'], function (module, require) {
     }
   }
   else if (typeof process !== 'undefined' && process.versions && !!process.versions.node) {
-    var fs = require.nodeRequire('fs');
+    var fs = requirejs.nodeRequire('fs');
     loader.fetch = function(path, callback) {
       callback(fs.readFileSync(path, 'utf8'));
     }

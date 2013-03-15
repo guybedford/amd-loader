@@ -1,0 +1,19 @@
+<!doctype html>
+<script>
+  var require = {
+    config: {
+      '../loader': {
+        useCors: true
+      }
+    }
+  };
+</script>
+<script src="require.js"></script>
+<script>
+  require(['cs!test'], function() {
+    console.log('loaded local file');
+  });
+  require(['cs!http://dev.jslib.co/test.coffee'], function() {
+    console.log('loaded using CORS');
+  });
+</script>
