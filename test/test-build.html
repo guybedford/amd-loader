@@ -12,9 +12,9 @@
 <script src="test.js"></script>
 <script>
   require(['cs!test'], function() {
-    console.log('loaded local file from build');
+    alert('loaded local file from build');
   });
   require(['cs!http://dev.jslib.co/test.coffee'], function() {
-    console.log('loaded using CORS');
+    alert('loaded using CORS');
   });
 </script>
