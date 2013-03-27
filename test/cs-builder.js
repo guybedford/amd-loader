@@ -1,5 +1,5 @@
-define(['loader', 'coffee-script'], function(loader, CoffeeScript) {
-  return loader('coffee', function(name, source, req, load, config) {
+define(['amdcompiler', 'coffee-script', 'module'], function(amdcompiler, CoffeeScript, module) {
+  return amdcompiler(module.id, 'coffee', function(name, source, req, load, config) {
     load(CoffeeScript.compile(source));
   });
 });

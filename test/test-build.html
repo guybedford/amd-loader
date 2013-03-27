@@ -1,20 +1,11 @@
 <!doctype html>
-<script>
-  var require = {
-    config: {
-      '../loader': {
-        useCors: true
-      }
-    }
-  };
-</script>
 <script src="require.js"></script>
 <script src="test.js"></script>
 <script>
   require(['cs!test'], function() {
     alert('loaded local file from build');
   });
-  require(['cs!http://dev.jslib.co/test.coffee'], function() {
+  require(['cs!http://dev.jspm.io/test.coffee'], function() {
     alert('loaded using CORS');
   });
 </script>

@@ -1,28 +1,53 @@
-define(['module', 'require'], function (module, require) {
-  var config = module.config();
+define(function() {
+  // precompiled can be true indicating all resources have been compiled
+  // or it can be an array of paths prefixes which are precompiled
+  var precompiled;
 
-  var useCors = config && config.useCors;
+  var loader = function(pluginId, ext, allowExts, compile) {
+    if (arguments.length == 3) {
+      compile = allowExts;
+      allowExts = undefined;
+    }
+    else if (arguments.length == 2) {
+      compile = ext;
+      ext = allowExts = undefined;
+    }
 
-  var loader = function(extension, subloader) {
     return {
       buildCache: {},
-      normalize: function(name, normalize) {
-        // ensure name is always without extension
-        if (name.substr(name.length - extension.length - 1) == '.' + extension)
-          name = name.substr(0, name.length - extension.length - 1);
-        return normalize(name);
-      },
       load: function(name, req, load, config) {
-        var path = req.toUrl(name + '.' + extension);
+        var path = req.toUrl(name);
+
+        // precompiled -> load from .ext.js extension
+        if (config.precompiled instanceof Array) {
+          for (var i = 0; i < config.precompiled.length; i++)
+            if (path.substr(0, config.precompiled[i].length) == config.precompiled[i])
+              return require([path + '.' + pluginId + '.js'], load, load.error);
+        }
+        else if (config.precompiled === true)
+          return require([path + '.' + pluginId + '.js'], load, load.error);
+
+        // only add extension if a moduleID not a path
+        if (ext && name.substr(0, 1) != '/' && !name.match(/:\/\//)) {
+          var validExt = false;
+          if (allowExts) {
+            for (var i = 0; i < allowExts.length; i++) {
+              if (name.substr(name.length - allowExts[i].length - 1) == '.' + allowExts[i])
+                validExt = true;
+            }
+          }
+          if (!validExt)
+            path += '.' + ext;
+        }
+
         var self = this;
         
         loader.fetch(path, function(source) {
-          subloader(name, source, req, function(compiled) {
+          compile(name, source, req, function(compiled) {
             if (typeof compiled == 'string') {
               if (config.isBuild)
                 self.buildCache[name] = compiled;
-              load.fromText(module.id + '!' + name, compiled);
-              req([module.id + '!' + name], load);
+              load.fromText(compiled);
             }
             else
               load(compiled);
@@ -34,15 +59,15 @@ define(['module', 'require'], function (module, require) {
         if (compiled)
           write.asModule(pluginName + '!' + moduleName, compiled);
       },
-      writeFile: function(pluginName, moduleName, write) {
-        write.asModule(pluginName + '!' + moduleName, this.buildCache[moduleName]);
+      writeFile: function(pluginName, name, req, write) {
+        write.asModule(pluginName + '!' + name, req.toUrl(name + '.' + pluginId + '.js'), this.buildCache[name]);
       }
     };
   }
 
-  loader.load = function(name, req, load, config) {
-    load(loader);
-  }
+  //loader.load = function(name, req, load, config) {
+  //  load(loader);
+  //}
 
   if (typeof window != 'undefined') {
     var isCrossDomain = function(path) {
@@ -99,13 +124,8 @@ define(['module', 'require'], function (module, require) {
     };
 
     loader.fetch = function (url, callback, errback) {
-      var crossDomain = isCrossDomain(url);
-      // cross domain and not CORS - assume have a compiled file at moduleName.ext.js
-      if (crossDomain && !useCors)
-        return require([url + '.js'], callback, errback);
-
       // get the xhr with CORS enabled if cross domain
-      var xhr = getXhr(crossDomain);
+      var xhr = getXhr(isCrossDomain(url));
       
       xhr.open('GET', url, !requirejs.inlineRequire);
       xhr.onreadystatechange = function(evt) {
@@ -120,8 +140,11 @@ define(['module', 'require'], function (module, require) {
             if (errback)
               errback(err);
           }
-          else
+          else {
+            if (xhr.responseText == '')
+              return errback(new Error(url + ' empty response'));
             callback(xhr.responseText);
+          }
         }
       };
       xhr.send(null);

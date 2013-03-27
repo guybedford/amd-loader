@@ -1,0 +1,12 @@
+<!doctype html>
+<script>
+  var require = {
+    precompiled: true
+  };
+</script>
+<script src='require.js'></script>
+<script>
+  require(['cs!test'], function() {
+    alert('loaded precompiled file');
+  });
+</script>
