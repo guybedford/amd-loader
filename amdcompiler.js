@@ -18,6 +18,8 @@ define(function() {
       load: function(name, req, load, config) {
         var path = req.toUrl(name);
 
+        console.log(config.precompiled);
+
         // precompiled -> load from .ext.js extension
         if (config.precompiled instanceof Array) {
           for (var i = 0; i < config.precompiled.length; i++)
