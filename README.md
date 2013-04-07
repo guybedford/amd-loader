@@ -34,7 +34,7 @@ AMD Loader can make it for us in just a few lines:
 
 awesometpl.js:
 ```javascript
-  define(['amd-loader, 'awesome-compiler'], function(amdLoader, awesomeCompiler) {
+  define(['amd-loader', 'awesome-compiler'], function(amdLoader, awesomeCompiler) {
     return amdLoader('awesometpl', 'awesomeext', function(name, source, req, callback, errback) {
       callback(awesomeCompiler.compile(source));
     });
@@ -52,7 +52,7 @@ For the template example above, we can then do the following:
 
 awesometpl.js:
 ```javascript
-  define(['amd-loader], function(amdLoader) {
+  define(['amd-loader'], function(amdLoader) {
     pluginBuilder = './awesometpl-build';
     return amdLoader('awesometpl', 'awesomeext', function(name, source, req, callback, errback) {
       require(['awesome-compiler'], function(awesomeCompiler) {
