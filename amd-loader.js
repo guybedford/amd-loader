@@ -70,7 +70,9 @@ define(function() {
   //}
 
   if (typeof window != 'undefined') {
-    var isCrossDomain = function(path) {
+    var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'];
+    var getXhr = function(path) {
+      // check if same domain
       var sameDomain = true,
         domainCheck = /^(\w+:)?\/\/([^\/]+)/.exec(path);
       if (typeof window != 'undefined' && domainCheck) {
@@ -78,32 +80,14 @@ define(function() {
         if (domainCheck[1])
           sameDomain &= domainCheck[1] === window.location.protocol;
       }
-      return !sameDomain;
-    }
-    
-    var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'];
-    var getXhr = function(crossDomain) {
-      var xhr, i, prodId;
-      if (crossDomain) {
-        var xhr = new XMLHttpRequest();
-        if ('withCredentials' in xhr) {}
-        else if (typeof XDomainRequest != 'undefined') {
-          // XDomainRequest for IE.
-          xhr = new XDomainRequest();
-        }
-        else {
-          // CORS not supported.
-          throw new Error('getXhr(): CORS not supported');
-        }
-        return xhr;
-      }
 
-      // normal xhr
-      if (typeof XMLHttpRequest !== 'undefined') {
-        return new XMLHttpRequest();
-      }
+      // create xhr
+      var xhr;
+      if (typeof XMLHttpRequest !== 'undefined')
+        xhr = new XMLHttpRequest();
       else {
-        for (i = 0; i < 3; i += 1) {
+        var progId;
+        for (var i = 0; i < 3; i += 1) {
           progId = progIds[i];
           try {
             xhr = new ActiveXObject(progId);
@@ -117,6 +101,14 @@ define(function() {
         }
       }
 
+      // use cors if necessary
+      if (!sameDomain) {
+        if (typeof XDomainRequest != 'undefined')
+          xhr = new XDomainRequest();
+        else if (!('withCredentials' in xhr))
+          throw new Error('getXhr(): Cross Origin XHR not supported.');
+      }
+
       if (!xhr)
         throw new Error('getXhr(): XMLHttpRequest not available');
 
@@ -125,7 +117,7 @@ define(function() {
 
     loader.fetch = function (url, callback, errback) {
       // get the xhr with CORS enabled if cross domain
-      var xhr = getXhr(isCrossDomain(url));
+      var xhr = getXhr(url);
       
       xhr.open('GET', url, !requirejs.inlineRequire);
       xhr.onreadystatechange = function(evt) {
