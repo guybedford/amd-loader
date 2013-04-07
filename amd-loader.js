@@ -51,7 +51,7 @@ define(function() {
             }
             else
               load(compiled);
-          }, load.error);
+          }, load.error, config);
         }, load.error);
       },
       write: function(pluginName, moduleName, write) {
