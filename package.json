@@ -1,7 +1,7 @@
 {
-  "name": "amdcompiler",
+  "name": "amd-loader",
   "volo": {
-    "url": "https://raw.github.com/guybedford/amdcompiler/master/amdcompiler.js"
+    "url": "https://raw.github.com/guybedford/amd-loader/{version}/amd-loader.js"
   }
 }
 
