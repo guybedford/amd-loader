@@ -65,7 +65,7 @@ awesometpl.js:
 awesometpl-build.js:
 ```javascript
   define(['amd-loader', 'awesome-compiler'], function(amdLoader, awesomeCompiler) {
-    return amdLoader('awesomeext', function(name, source, req, callback, errback) {
+    return amdLoader('awesometpl', 'awesomeext', function(name, source, req, callback, errback) {
       callback(awesomeCompiler.compile(source));
     });
   });
