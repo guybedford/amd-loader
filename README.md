@@ -53,7 +53,7 @@ For the template example above, we can then do the following:
 awesometpl.js:
 ```javascript
   define(['amd-loader'], function(amdLoader) {
-    pluginBuilder = './awesometpl-build';
+    var pluginBuilder = './awesometpl-build';
     return amdLoader('awesometpl', 'awesomeext', function(name, source, req, callback, errback, config) {
       require(['awesome-compiler'], function(awesomeCompiler) {
         callback(awesomeCompiler.compile(source));
