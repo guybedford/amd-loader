@@ -15,6 +15,12 @@ Supports:
 
 This module is in planning to be used as a base for the [Require-CS module](https://github.com/jrburke/require-cs).
 
+Plugins Built with AMD-Loader
+---
+
+* [ES6 plugin](https://github.com/guybedford/es6)
+* [CommonJS plugin](https://github.com/guybedford/cjs)
+
 Example Usage
 ---
 
