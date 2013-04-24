@@ -17,15 +17,20 @@ define(function() {
       buildCache: {},
       load: function(name, req, load, config) {
         var path = req.toUrl(name);
+        var queryString = '';
+        if (path.indexOf('?') != -1) {
+          queryString = path.substr(path.indexOf('?'));
+          path = path.substr(0, path.length - queryString.length);
+        }
 
         // precompiled -> load from .ext.js extension
         if (config.precompiled instanceof Array) {
           for (var i = 0; i < config.precompiled.length; i++)
             if (path.substr(0, config.precompiled[i].length) == config.precompiled[i])
-              return require([path + '.' + pluginId + '.js'], load, load.error);
+              return require([path + '.' + pluginId + '.js' + queryString], load, load.error);
         }
         else if (config.precompiled === true)
-          return require([path + '.' + pluginId + '.js'], load, load.error);
+          return require([path + '.' + pluginId + '.js' + queryString], load, load.error);
 
         // only add extension if a moduleID not a path
         if (ext && name.substr(0, 1) != '/' && !name.match(/:\/\//)) {
@@ -37,8 +42,14 @@ define(function() {
             }
           }
           if (!validExt)
-            path += '.' + ext;
+            path += '.' + ext + queryString;
+          else
+            path += queryString;
         }
+        else {
+          path += queryString;
+        }
+      
 
         var self = this;
         
